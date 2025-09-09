@@ -2,14 +2,15 @@
 
 namespace Innoweb\InternationalPhoneNumberField\Forms;
 
-use libphonenumber\NumberParseException;
-use libphonenumber\PhoneNumberFormat;
+use SilverStripe\Forms\TextField;
 use libphonenumber\PhoneNumberUtil;
+use SilverStripe\View\Requirements;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
+use libphonenumber\PhoneNumberFormat;
+use libphonenumber\NumberParseException;
+use SilverStripe\Core\Validation\ValidationResult;
 use SilverStripe\Core\Manifest\ModuleResourceLoader;
-use SilverStripe\Forms\TextField;
-use SilverStripe\View\Requirements;
 
 class InternationalPhoneNumberField extends TextField
 {
@@ -106,16 +107,16 @@ class InternationalPhoneNumberField extends TextField
         if ($IPLocationService) {
             $protocol = Config::inst()->get(InternationalPhoneNumberField::class, 'geolocation_protocol') ?: 'https';
             if ($IPLocationService == 'ipstack' && $IPLocationAPIKey) {
-                $IPLocationAPIURL = Controller::join_links($protocol.'://api.ipstack.com', 'check', '?access_key='.$IPLocationAPIKey);
+                $IPLocationAPIURL = Controller::join_links($protocol . '://api.ipstack.com', 'check', '?access_key=' . $IPLocationAPIKey);
                 $IPLocationReplyKey = 'country_code';
             } else if ($IPLocationService == 'ipinfo' && $IPLocationAPIKey) {
-                $IPLocationAPIURL = Controller::join_links($protocol.'://ipinfo.io', '?token='.$IPLocationAPIKey);
+                $IPLocationAPIURL = Controller::join_links($protocol . '://ipinfo.io', '?token=' . $IPLocationAPIKey);
                 $IPLocationReplyKey = 'country';
             } else if ($IPLocationService == 'ipgeolocation' && $IPLocationAPIKey) {
-                $IPLocationAPIURL = Controller::join_links($protocol.'://api.ipgeolocation.io/ipgeo', '?apiKey='.$IPLocationAPIKey);
+                $IPLocationAPIURL = Controller::join_links($protocol . '://api.ipgeolocation.io/ipgeo', '?apiKey=' . $IPLocationAPIKey);
                 $IPLocationReplyKey = 'country_code2';
             } else if ($IPLocationService == 'ipapi') {
-                $IPLocationAPIURL = Controller::join_links($protocol.'://ipapi.co/json');
+                $IPLocationAPIURL = Controller::join_links($protocol . '://ipapi.co/json');
                 $IPLocationReplyKey = 'country_code';
             }
         }
@@ -161,7 +162,8 @@ class InternationalPhoneNumberField extends TextField
      */
     public function Field($properties = [])
     {
-        if ($this->config()->get('geolocation_service') === false
+        if (
+            $this->config()->get('geolocation_service') === false
             && $this->config()->get('initial_country') === 'auto'
             && $this->config()->get('load_default_from_user_agent') === true
         ) {
@@ -232,38 +234,45 @@ class InternationalPhoneNumberField extends TextField
         return $this;
     }
 
-    public function validate($validator)
+    public function validate(): ValidationResult
     {
-        $result = true;
+        $result = ValidationResult::create();
         $phoneUtil = PhoneNumberUtil::getInstance();
         if ($this->value === false) {
-            $validator->validationError(
-                $this->name,
-                _t('InternationalPhoneNumberField.VALIDATION', 'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'),
-                'validation'
+            $result->addError(
+                _t(
+                    'InternationalPhoneNumberField.VALIDATION',
+                    'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
+                ),
+                $this->name
             );
-            $result = false;
         } elseif ($this->value) {
             try {
                 $numberProto = $phoneUtil->parse(trim($this->value), null);
                 if (!$phoneUtil->isValidNumber($numberProto)) {
-                    $validator->validationError(
-                        $this->name,
-                        _t('InternationalPhoneNumberField.VALIDATION', 'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'),
-                        'validation'
+                    $result->addError(
+                        _t(
+                            'InternationalPhoneNumberField.VALIDATION',
+                            'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
+                        ),
+                        $this->name
                     );
-                    $result = false;
                 }
             } catch (NumberParseException $e) {
-                $validator->validationError(
-                    $this->name,
-                    _t('InternationalPhoneNumberField.VALIDATION', 'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'),
-                    'validation'
+                $result->addError(
+                    _t(
+                        'InternationalPhoneNumberField.VALIDATION',
+                        'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
+                    ),
+                    $this->name
                 );
-                $result = false;
             }
         }
-        return $this->extendValidationResult($result, $validator);
+
+        // Allow extensions to modify the validation result
+        $this->extend('updateValidate', $result);
+
+        return $result;
     }
 
     public function getSchemaValidation()
