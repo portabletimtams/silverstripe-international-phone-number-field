@@ -2,14 +2,16 @@
 
 namespace Innoweb\InternationalPhoneNumberField\ORM;
 
-use Innoweb\InternationalPhoneNumberField\Forms\InternationalPhoneNumberField;
-use libphonenumber\NumberParseException;
-use libphonenumber\PhoneNumberFormat;
+use SilverStripe\ORM\DB;
+use SilverStripe\Forms\FormField;
+use SilverStripe\Model\ModelData;
 use libphonenumber\PhoneNumberUtil;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\ORM\Connect\MySQLDatabase;
-use SilverStripe\ORM\DB;
+use libphonenumber\PhoneNumberFormat;
 use SilverStripe\ORM\FieldType\DBField;
+use libphonenumber\NumberParseException;
+use SilverStripe\ORM\Connect\MySQLDatabase;
+use Innoweb\InternationalPhoneNumberField\Forms\InternationalPhoneNumberField;
 
 class DBPhone extends DBField
 {
@@ -25,10 +27,9 @@ class DBPhone extends DBField
     }
 
     /**
-     * (non-PHPdoc)
-     * @see DBField::requireField()
+     * @inheritDoc
      */
-    public function requireField()
+    public function requireField(): void
     {
         $charset = Config::inst()->get(MySQLDatabase::class, 'charset');
         $collation = Config::inst()->get(MySQLDatabase::class, 'collation');
@@ -48,10 +49,16 @@ class DBPhone extends DBField
 
         DB::require_field($this->tableName, $this->name, $values);
     }
-
-    public function setValue($value, $record = null, $markChanged = true)
+    public function setValue(mixed $value, null|array|ModelData $record = null, bool $markChanged = true): static
     {
         $phoneUtil = PhoneNumberUtil::getInstance();
+
+        // Ensure $value is a non-empty string before parsing
+        if (!is_string($value) || $value === '') {
+            $this->value = null;
+            return parent::setValue($this->value, $record, $markChanged);
+        }
+
         try {
             $numberProto = $phoneUtil->parse($value, null);
             if ($phoneUtil->isValidNumber($numberProto)) {
@@ -62,21 +69,21 @@ class DBPhone extends DBField
         } catch (NumberParseException $e) {
             $this->value = null;
         }
-        return $this;
+
+        return parent::setValue($this->value, $record, $markChanged);
     }
 
     /**
-     * (non-PHPdoc)
-     * @see core/model/fieldtypes/DBField#exists()
+     * @inheritDoc
      */
-    public function exists()
+    public function exists(): bool
     {
         $value = $this->RAW();
         // All truthy values and non-empty strings exist ('0' but not (int)0)
         return $value || (is_string($value) && strlen($value));
     }
 
-    public function scaffoldFormField($title = null, $params = null)
+    public function scaffoldFormField($title = null, $params = null): ?FormField
     {
         return InternationalPhoneNumberField::create($this->name, $title);
     }
