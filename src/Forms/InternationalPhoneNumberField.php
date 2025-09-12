@@ -241,7 +241,7 @@ class InternationalPhoneNumberField extends TextField
         if ($this->value === false) {
             $result->addError(
                 _t(
-                    'InternationalPhoneNumberField.VALIDATION',
+                    __CLASS__ . '.VALIDATION',
                     'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
                 ),
                 $this->name
@@ -252,7 +252,7 @@ class InternationalPhoneNumberField extends TextField
                 if (!$phoneUtil->isValidNumber($numberProto)) {
                     $result->addError(
                         _t(
-                            'InternationalPhoneNumberField.VALIDATION',
+                            __CLASS__ . '.VALIDATION',
                             'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
                         ),
                         $this->name
@@ -261,7 +261,7 @@ class InternationalPhoneNumberField extends TextField
             } catch (NumberParseException $e) {
                 $result->addError(
                     _t(
-                        'InternationalPhoneNumberField.VALIDATION',
+                        __CLASS__ . '.VALIDATION',
                         'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
                     ),
                     $this->name
