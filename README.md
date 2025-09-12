@@ -15,10 +15,9 @@ IP Geo Location services supported:
 
 ## Requirements
 
- * Silverstripe ^5
+ * Silverstripe ^6
  * [libphonenumber port for PHP ^8](https://github.com/giggsey/libphonenumber-for-php)
- 
- Note: this version is compatible with SilverStripe 5. For SilverStripe 4, please see the [4 release line](https://github.com/xini/silverstripe-international-phone-number-field/tree/4).
+
 
 ## Installation
 
@@ -26,6 +25,8 @@ Install the module using composer:
 ```
 composer require innoweb/silverstripe-international-phone-number-field dev-master
 ```
+
+
 Then run dev/build.
 
 ## Usage
@@ -42,9 +43,9 @@ private static $db = [
 ];
 ```
 
-This stores the phone number in the database as a varchar. 
+This stores the phone number in the database as a varchar.
 
-In the CMS the data type `Phone` renders as a `InternationalPhoneNumberField`. 
+In the CMS the data type `Phone` renders as a `InternationalPhoneNumberField`.
 
 In templates, the following formatting functions are available:
 
@@ -55,7 +56,7 @@ In templates, the following formatting functions are available:
 
 ### Form field
 
-The `InternationalPhoneNumberField` can be used for any Varchar field storing a phone number. 
+The `InternationalPhoneNumberField` can be used for any Varchar field storing a phone number.
 
 ## Configuration
 
