@@ -244,7 +244,6 @@ class InternationalPhoneNumberField extends TextField
                     __CLASS__ . '.VALIDATION',
                     'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
                 ),
-                $this->name
             );
         } elseif ($this->value) {
             try {
@@ -255,7 +254,10 @@ class InternationalPhoneNumberField extends TextField
                             __CLASS__ . '.VALIDATION',
                             'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
                         ),
-                        $this->name
+                    );
+
+                    $result->addError(
+                        _t(__CLASS__ . '.VALIDATION', 'Please enter a valid URL')
                     );
                 }
             } catch (NumberParseException $e) {
@@ -264,7 +266,6 @@ class InternationalPhoneNumberField extends TextField
                         __CLASS__ . '.VALIDATION',
                         'Please enter a valid phone number in international format, e.g. "+41 44 668 1800".'
                     ),
-                    $this->name
                 );
             }
         }
